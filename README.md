@@ -33,7 +33,7 @@ cd PiNode3
 bash install.sh
 ```
 
-以上でインストールは環境です．その他の設定等は[こちら]()を参照してください．
+以上でインストールは環境です．その他の設定等は[こちら](https://github.com/MinenoLab/PiNode3/blob/main/docs/source/get-started/index.rst)を参照してください．
 
 # データの確認
 本ソフトウェアはInfluxDBを使用しています．そのためダッシュボードを作成することでセンサデータの確認を容易に行うことができます．
