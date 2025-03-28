@@ -1,6 +1,23 @@
 # PiNode3
 PiNode3は農業ハウス内で動作するデータ収集システムです．
 
+# 実行環境
+
+### OS要件
+動作確認済みOSは以下です。
+lsb_release -a
+No LSB modules are available.
+Distributor ID: Debian
+Description:    Debian GNU/Linux 12 (bookworm)
+Release:        12
+Codename:       bookworm
+
+確認方法
+``` bash
+$ sudo apt-get install lsb-release
+$ lsb_release -a
+```
+
 # インストール
 
 ### I2C有効化
