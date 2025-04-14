@@ -4,6 +4,8 @@ import time
 from smbus2 import SMBus
 import board
 import busio
+import spidev
+
 
 # GPIOの定義
 GPIO_LED = 18    # LED_G
@@ -23,6 +25,8 @@ class SensorManager:
         # self.dsw_buttons = [Button(pin, pull_up=False) for pin in GPIO_DSW]
         self.i2c_enables = [DigitalOutputDevice(pin) for pin in GPIO_I2C_EN]
         self.spi_enable = DigitalOutputDevice(GPIO_SPI_OE)
+        self.d1tbl = [0x00, 0x40, 0x80, 0xC0]       # send data 1
+        self.spi = spidev.SpiDev()
         
         # クリーンアップの登録
         atexit.register(self.cleanup)
@@ -111,6 +115,44 @@ class SensorManager:
 
         return fT, fH
 
+    def stem_fruit_read(self):
+        """茎径センサを読み取る"""
+        self.spi_enable.on()
+        time.sleep(0.1)
+
+        try:
+            self.spi.open(0, 0) # bus0, CE0
+            self.spi.max_speed_hz = 1000000  # 1MHz
+            rd = self.spi.xfer2([0x06, self.d1tbl[0], 0x00])
+            self.spi.close()
+
+            #計算
+            stem = rd[1] * 256 + rd[2]
+            stem = stem*0.0025
+            stem = round(stem,2)
+
+        except Exception as e:
+            print(f"SPI Error: {e}")
+            stem = 0
+        """
+        try:
+            self.spi.open(0, 0) # bus0, CE0
+            self.spi.max_speed_hz = 1000000  # 1MHz
+            rd = self.spi.xfer2([0x06, self.d1tbl[1], 0x00])
+            self.spi.close()
+
+            rb = fruit
+            #計算
+
+        except Exception as e:
+            print(f"SPI Error: {e}")
+            fruit = 0
+        """
+        
+        self.spi_enable.off()
+               
+        return stem  #,fruit
+
     def get(self, sensor):
         """ センサーデータを取得 """
         sensor_map = {
@@ -121,8 +163,8 @@ class SensorManager:
             "humidity": lambda: self.sht25_read()[1],
             "temperature_hq": lambda: 0,
             "humidity_hq": lambda: 0,
-            "stem": lambda: 0,
-            "fruit_diagram": lambda: 0
+            "stem": lambda: self.stem_fruit_read()[0],
+            "fruit_diagram": lambda: stem_fruit_read()[1]
         }
 
         if sensor in sensor_map:
@@ -141,6 +183,7 @@ def main():
             print(f"湿度: {sensor_manager.get('humidity'):.2f} %")
             print(f"内部照度: {sensor_manager.get('i_v_light')} lux")
             print(f"外部照度: {sensor_manager.get('u_v_light')} lux")
+            print(f"茎径: {sensor_manager.get('stem')} mm")
             print("--------------------------")
             time.sleep(1)
     except KeyboardInterrupt:
