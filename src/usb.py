@@ -103,7 +103,8 @@ class USB:
         """
 
         assert port in [1, 2, 3, 4]
-        model = subprocess.check_output('sudo cat /proc/cpuinfo'.split()).decode()
+        with open("/proc/cpuinfo", "r") as f:
+            model = f.read()
         device_name = ''
         if 'Raspberry Pi 3 Model B Plus' in model:
             if port == 1:
