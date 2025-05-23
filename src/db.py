@@ -20,7 +20,7 @@ class InfluxDB:
         self.org        = pinode_config["influxdb"]["organization"]
         self.bucket     = pinode_config["influxdb"]["bucket"]
         self.device_id  = pinode_config["device_id"]
-        self.url        = f"http://localhost:{pinode_config['influxdb']['port']}"
+        self.url        = f"http://{pinode_config['influxdb']['host']}:{pinode_config['influxdb']['port']}"
 
         with open(Path(__file__).parent / "token.txt") as f:
             self.token = f.read().strip()

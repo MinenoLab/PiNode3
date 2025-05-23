@@ -1,6 +1,7 @@
 {
     "device_id" : "00",
     "influxdb"  : {
+        "host"          : "localhost",
         "port"          : 8086,
         "username"      : "pinode",
         "password"      : "pinode-pass",
