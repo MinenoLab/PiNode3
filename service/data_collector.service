@@ -3,27 +3,14 @@ Description=Read Sensor and Shoot Camera app
 After=network.target
 
 [Service]
-Type=simple
-WorkingDirectory=/usr/local/bin/pinode3
-# Python仮想環境設定
-Environment="VIRTUAL_ENV=/usr/local/bin/pinode3/python/pinode3/"
-Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-Environment="PYTHONPATH=/usr/local/bin/pinode3"
-# GPIO関連の環境変数
-Environment="GPIOZERO_PIN_FACTORY=RPiGPIO"
-Environment="GPIOZERO_PIN=BCM"
-Environment="PIGPIO_ADDR=localhost"
-Environment="PIGPIO_PORT=8888"
-# 権限の設定
-User=root
-Group=gpio
-CapabilityBoundingSet=CAP_SYS_RAWIO
-AmbientCapabilities=CAP_SYS_RAWIO
+Type=oneshot
+User=pinode3
+WorkingDirectory=/home/pinode3
 # デバッグ用のログ出力
 StandardOutput=journal
 StandardError=journal
 # スクリプトの実行
-ExecStart=/usr/local/bin/pinode3/python/pinode3/bin/python /usr/local/bin/pinode3/data_collector.py
+ExecStart=/home/pinode3/PiNode3/pinode3/bin/python /home/pinode3/PiNode3/pinode3/src/data_collector.py
 
 # エラー時の再起動設定
 Restart=on-failure

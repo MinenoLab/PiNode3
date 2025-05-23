@@ -49,20 +49,10 @@ fi
 echo "InfluxDBのインストールとセットアップが完了しました。"
 
 ### pythonライブラリのインストール
-# [仮想環境有効化]
-# $ source /usr/local/bin/pinod3/python/pinode3/bin/activate
-# [仮想環境無効化]
-# $ deactivate
-# [仮想環境削除]
-# $ rm -rf /usr/local/bin/python/pinode3
 echo "=== pythonライブラリのインストール ==="
-python -m venv pinode3
+python -m venv pinode3 --system-site-packages
 source pinode3/bin/activate
 pip install -r "requirements.txt"
-
-mkdir -p /usr/local/bin/pinode3/python/
-mv pinode3/ /usr/local/bin/pinode3/python/
-deactivate
 
 echo === USB判別ドライバのインストール ===
 model=$(grep -m1 -o -w 'Raspberry Pi [0-9]* Model [ABCD]\|Raspberry Pi 3 Model B Plus' /proc/cpuinfo)
@@ -80,22 +70,17 @@ fi
 
 ### python・サービス・設定ファイル等を移行する
 echo === Python/サービス/設定ファイルのコピー ===
-sudo chmod 755 -R src/*
-sudo cp src/* /usr/local/bin/pinode3
-sudo chmod 777 service/*
 sudo cp service/* /etc/systemd/system/
-sudo mkdir -p /home/pinode3/data/sensor/lost
-sudo mkdir -p /home/pinode3/data/image/image1
-sudo mkdir -p /home/pinode3/data/image/image2
-sudo mkdir -p /home/pinode3/data/image/image3
-sudo mkdir -p /home/pinode3/data/image/image4
-sudo cp src/previous_sensor_data.json /home/pinode3/data
-sudo cp config.json /home/pinode3/
-sudo chmod 666 /home/pinode3/config.json
-sudo chmod -R 777 /home/pinode3/data
+mkdir -p /home/pinode3/data/sensor/lost
+mkdir -p /home/pinode3/data/image/image1
+mkdir -p /home/pinode3/data/image/image2
+mkdir -p /home/pinode3/data/image/image3
+mkdir -p /home/pinode3/data/image/image4
+cp src/previous_sensor_data.json /home/pinode3/data
+cp config.json /home/pinode3/
 
 ### サービスファイルの登録
 echo === サービスファイルの登録 ===
 sudo systemctl daemon-reload
+sudo systemctl enable data_collector.timer
 sudo systemctl start data_collector.timer
-sudo systemctl start data_collector.service

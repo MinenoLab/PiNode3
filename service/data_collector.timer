@@ -3,6 +3,7 @@ Description=Collect Image and Sensor
 
 [Timer]
 OnCalendar=*-*-* *:*:00
+Persistent=false
 
 [Install]
 WantedBy=timers.target
