@@ -10,7 +10,7 @@ WorkingDirectory=/home/pinode3
 StandardOutput=journal
 StandardError=journal
 # スクリプトの実行
-ExecStart=/home/pinode3/PiNode3/pinode3/bin/python /home/pinode3/PiNode3/pinode3/src/data_collector.py
+ExecStart=/home/pinode3/PiNode3/pinode3/bin/python /home/pinode3/PiNode3/src/data_collector.py
 
 # エラー時の再起動設定
 Restart=on-failure
