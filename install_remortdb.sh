@@ -36,6 +36,22 @@ else
 	exit 1
 fi
 
+### rsyncによるデータのアップロード
+echo === ssh公開鍵の登録 ===
+ssh-keygen -t rsa -b 2048 -N "" -f ~/.ssh/pinode_key -q
+echo "-> 接続先ホストのIPアドレスを入力してください。"
+read -p "HOST :" HOST
+echo "-> 接続先ユーザ名を入力してください。"
+read -p "NAME :" NAME
+ssh-copy-id -i ~/.ssh/pinode_key.pub "$NAME"@"$HOST"
+ip_hyphen=$(hostname -I | awk '{gsub(/\./, "-");print $1}')
+cat << EOF > "/home/pinode3/upload_files.sh"
+#!/bin/bash
+rsync -az -e "ssh -i /home/pinode3/.ssh/pinode_key" --rsync-path="mkdir -p /home/$NAME/$ip_hyphen/data && rsync" /home/pinode3/data/ $NAME@$HOST:/home/$NAME/$ip_hyphen/data/
+
+EOF
+chmod +x "/home/pinode3/upload_files.sh"
+
 ### python・サービス・設定ファイル等を移行する
 echo === Python/サービス/設定ファイルのコピー ===
 sudo chmod 755 -R src/*
@@ -55,6 +71,8 @@ sudo chmod -R 777 /home/pinode3/data
 ### サービスファイルの登録
 echo === サービスファイルの登録 ===
 sudo systemctl daemon-reload
+sudo systemctl enable data_collector.timer
 sudo systemctl start data_collector.timer
-sudo systemctl start data_collector.service
+sudo systemctl enable daily_rsync.timer
+sudo systemctl start daily_rsync.timer
 

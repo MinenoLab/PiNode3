@@ -1,0 +1,11 @@
+[Unit]
+Description=Run upload every day
+
+[Timer]
+OnCalendar=*-*-* 01:00:00
+RandomizedDelaySec=60m
+Persistent=false
+
+[Install]
+WantedBy=timers.target
+
