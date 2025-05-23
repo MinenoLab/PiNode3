@@ -116,42 +116,35 @@ class SensorManager:
         return fT, fH
 
     def stem_fruit_read(self):
-        """茎径センサを読み取る"""
+        """茎径＆果実径センサを読み取る（出力：V）"""
         self.spi_enable.on()
         time.sleep(0.1)
 
         try:
             self.spi.open(0, 0) # bus0, CE0
             self.spi.max_speed_hz = 1000000  # 1MHz
+
+            # STEM(Ch0)を読み取る
             rd = self.spi.xfer2([0x06, self.d1tbl[0], 0x00])
-            self.spi.close()
+            v = (rd[1] & 0x1f) * 256 + rd[2]
+            v = v / 4095 * 2.048
+            stem_v = round(v, 2)
 
-            #計算
-            stem = rd[1] * 256 + rd[2]
-            stem = stem*0.0025
-            stem = round(stem,2)
-
-        except Exception as e:
-            print(f"SPI Error: {e}")
-            stem = 0
-        """
-        try:
-            self.spi.open(0, 0) # bus0, CE0
-            self.spi.max_speed_hz = 1000000  # 1MHz
+            # FRUIT(Ch1)を読み取る
             rd = self.spi.xfer2([0x06, self.d1tbl[1], 0x00])
-            self.spi.close()
-
-            rb = fruit
-            #計算
-
+            v = (rd[1] & 0x1f) * 256 + rd[2]
+            v = v / 4095 * 2.048
+            fruit_v = round(v, 2)
         except Exception as e:
             print(f"SPI Error: {e}")
-            fruit = 0
-        """
-        
+            stem_v = 0
+            fruit_v = 0
+        finally:
+            self.spi.close()
+
         self.spi_enable.off()
                
-        return stem  #,fruit
+        return (stem_v, fruit_v)
 
     def get(self, sensor):
         """ センサーデータを取得 """
@@ -164,7 +157,7 @@ class SensorManager:
             "temperature_hq": lambda: 0,
             "humidity_hq": lambda: 0,
             "stem": lambda: self.stem_fruit_read()[0],
-            "fruit_diagram": lambda: stem_fruit_read()[1]
+            "fruit_diagram": lambda: self.stem_fruit_read()[1]
         }
 
         if sensor in sensor_map:
@@ -183,7 +176,8 @@ def main():
             print(f"湿度: {sensor_manager.get('humidity'):.2f} %")
             print(f"内部照度: {sensor_manager.get('i_v_light')} lux")
             print(f"外部照度: {sensor_manager.get('u_v_light')} lux")
-            print(f"茎径: {sensor_manager.get('stem')} mm")
+            print(f"茎径: {sensor_manager.get('stem')} V")
+            print(f"果実径: {sensor_manager.get('fruit_diagram')} V")
             print("--------------------------")
             time.sleep(1)
     except KeyboardInterrupt:
