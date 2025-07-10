@@ -49,9 +49,11 @@ fi
 echo "InfluxDBのインストールとセットアップが完了しました。"
 
 ### pythonライブラリのインストール
+sudo apt update
+sudo apt install python3-opencv
 echo "=== pythonライブラリのインストール ==="
-python -m venv pinode3 --system-site-packages
-source pinode3/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install -r "requirements.txt"
 
 echo === USB判別ドライバのインストール ===
@@ -84,3 +86,4 @@ echo === サービスファイルの登録 ===
 sudo systemctl daemon-reload
 sudo systemctl enable data_collector.timer
 sudo systemctl start data_collector.timer
+
