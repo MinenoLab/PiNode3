@@ -1,12 +1,11 @@
 influxdb-client==1.49.0
 pandas==2.3.1
 opencv-python==4.12.0.88
-spidev==3.7
 timeout-decorator==0.5.0
 pyserial==3.5
 cobs==1.2.1
 Sphinx==8.2.3
 gpiozero==2.0.1
 smbus2==0.5.0
-Adafruit-Blinka==8.62.0
 crcmod==1.7
+lgpio==0.2.2.0

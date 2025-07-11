@@ -9,80 +9,68 @@
         "bucket"        : "pinode"
     },
     "sensor"    : {
-        "previous_data_path" : "/home/pinode3/data/previous_sensor_data.json",
-		"csv_dir" : "/home/pinode3/data/sensor/",
-        "i2c_command" : {
-			"i_v_light"     : "/usr/local/bin/read_sensor -t s1133 -i 0",
-			"u_v_light"     : "/usr/local/bin/read_sensor -t s1133 -i 1",
-			"temperature"   : "/usr/local/bin/read_sensor -t sht25 -i 0 -m temp",
-			"humidity"      : "/usr/local/bin/read_sensor -t sht25 -i 0 -m humi",
-			"temperature_hq": "",
-			"humidity_hq"	: ""
-		},
-		"spi_channel" : {
-			"stem"          : 0,
-			"fruit_diagram" : 1
-		},
+        "previous_data_path"    : "/home/pinode3/data/previous_sensor_data.json",
+        "csv_dir"       : "/home/pinode3/data/sensor/",
         "min_value" : {
-			"i_v_light" 	: 0,
-			"u_v_light" 	: 0,
-			"temperature" 	: -40,
-			"humidity" 		: 0,
-			"temperature_hq": -40,
-			"humidity_hq"	: 0,
-			"stem" 			: 0.01,
-			"fruit_diagram" : 0.01
-		},
-		"max_value" : {
-			"i_v_light" 	: 1000000,
-			"u_v_light" 	: 1000000,
-			"temperature" 	: 125,
-			"humidity" 		: 100,
-			"temperature_hq": 125,
-			"humidity_hq"	: 100,
-			"stem" 			: 5,
-			"fruit_diagram" : 2
-		},
-		"sleep_time" : {
-			"i_v_light" 	: 0.1,
-			"u_v_light" 	: 0.1,
-			"temperature" 	: 0.1,
-			"humidity" 		: 0.1,
-			"temperature_hq": 0.1,
-			"humidity_hq"	: 0.1,
-			"stem" 			: 0.1,
-			"fruit_diagram" : 0.1
-		},
-		"max_retry_count" : {
-			"i_v_light" 	: 3,
-			"u_v_light" 	: 3,
-			"temperature" 	: 3,
-			"humidity" 		: 3,
-			"temperature_hq": 3,
-			"humidity_hq"	: 3,
-			"stem" 			: 3,
-			"fruit_diagram" : 3
-		},
-		"retry_interval" : {
-			"i_v_light" 	: 0.3,
-			"u_v_light" 	: 0.3,
-			"temperature" 	: 0.3,
-			"humidity" 		: 0.3,
-			"temperature_hq": 0.3,
-			"humidity_hq"	: 0.3,
-			"stem" 			: 0.5,
-			"fruit_diagram" : 0.5
-		}
+            "i_v_light"      : 0,
+            "u_v_light"      : 0,
+            "temperature"    : -40,
+            "humidity"       : 0,
+            "temperature_hq" : -40,
+            "humidity_hq"    : 0,
+            "stem"           : 0.01,
+            "fruit_diagram"  : 0.01
+        },
+        "max_value" : {
+            "i_v_light"      : 1000000,
+            "u_v_light"      : 1000000,
+            "temperature"    : 125,
+            "humidity"       : 100,
+            "temperature_hq" : 125,
+            "humidity_hq"    : 100,
+            "stem"           : 5,
+            "fruit_diagram"  : 2
+        },
+        "sleep_time" : {
+            "i_v_light"      : 0.1,
+            "u_v_light"      : 0.1,
+            "temperature"    : 0.1,
+            "humidity"       : 0.1,
+            "temperature_hq" : 0.1,
+            "humidity_hq"    : 0.1,
+            "stem"           : 0.1,
+            "fruit_diagram"  : 0.1
+        },
+        "max_retry_count" : {
+            "i_v_light"      : 3,
+            "u_v_light"      : 3,
+            "temperature"    : 3,
+            "humidity"       : 3,
+            "temperature_hq" : 3,
+            "humidity_hq"    : 3,
+            "stem"           : 3,
+            "fruit_diagram"  : 3
+        },
+        "retry_interval" : {
+            "i_v_light"      : 0.3,
+            "u_v_light"      : 0.3,
+            "temperature"    : 0.3,
+            "humidity"       : 0.3,
+            "temperature_hq" : 0.3,
+            "humidity_hq"    : 0.3,
+            "stem"           : 0.5,
+            "fruit_diagram"  : 0.5
+        }
     },
-	"camera"	: {
-		"image_dir" : "/home/pinode3/data/image",
-		"time_out" : {
-			"usb_camera"	: 20,
-			"SPRESENSE"		: 50
-		},
-		"max_retry_count" : {
-			"usb_camera"	: 3,
-			"SPRESENSE"		: 3
-		}
-	}
+    "camera"    : {
+        "image_dir" : "/home/pinode3/data/image",
+        "time_out"  :{
+            "usb_camera"     : 20,
+            "SPRESENSE"      : 50
+        }
+    },
+    "max_retry_count" : {
+        "usb_camera"     : 3,
+        "SPRESENSE"      : 3
+    }
 }
