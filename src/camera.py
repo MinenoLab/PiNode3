@@ -3,14 +3,14 @@ import timeout_decorator
 import subprocess
 import time
 from cobs import cobs
+import crcmod
 import serial
-import json
 import datetime as dt
-
+import numpy as np
 from pathlib import Path
-
 from usb import USB
 import util
+
 
 class Camera:
     """
@@ -61,7 +61,6 @@ class SPRESENSE:
         TYPE_ERROR(int): SPRESENSEから送られてきたパケットのタイプ(エラーデータ)
     """
     BAUD_RATE   = 115200  
-    BUFF_SIZE   = 100  
     TYPE_INFO   = 0
     TYPE_IMAGE  = 1
     TYPE_FINISH = 2
@@ -78,9 +77,8 @@ class SPRESENSE:
         Args:
             file_name (str): 保存するファイル名
         
-        Returns:    
-            True (bool): データ保存が正常に終了
-            False (bool): データ保存に失敗
+        Returns:
+            ret (bool) : 画像保存が成功したか
 
         Notes:
             ・3回実行を行いエラーが発生した場合は終了する
@@ -117,17 +115,19 @@ class SPRESENSE:
         subprocess.call("sudo sh -c \"echo -n \"1-1\" > /sys/bus/usb/drivers/usb/bind\"", shell=True)
         time.sleep(5)
 
-    def _get_packet(self, ser):
+    def _get_packet(self, ser, timeout=3):
         """Function
         接続しているシリアルポートから1パケット分データの受信を行う
         
         Args:
-            ser (serial.Serial):
+            ser (serial.Serial): 接続しているシリアル
+            timeout (uint)     : タイムアウト時間（sec）
 
         Returns:
-            [decoded[0],index,decoded[5:]] :list (int,int,bytearray)
+            [is_crc_valid, decoded[0],index,decoded[5:]] :list (bool, int,int,bytearray)
             
         Attributes:
+            is_crc_valid: CRCチェックの結果
             index (int): decodedは最初の4桁がインデックス番号.4桁の数値をint型に変換し画像インデックスとして使用
             decoded[0] (int): SPRESENSEから送られてきたパケットのタイプ(画像データ)
             decoded[5:](bytearray): 画像データ本体
@@ -154,35 +154,27 @@ class SPRESENSE:
                 ...
                 
                 decoded[X]:画像データ内容X
+                CRC       :データのCRC(8bit)
     
         """
-        try:
-            img = b''
-            while True:
-                val = ser.read()
-                if val == b'\x00':
-                    break
-                img += val
-            decoded = cobs.decode(img)
-            index = int(decoded[1]) * 1000 + int(decoded[2]) * 100 + int(decoded[3]) * 10 + int(decoded[4])
-            return decoded[0], index, decoded[5:]
-        except Exception as e:
-            return self.TYPE_ERROR, 0, b''
+        buf = bytearray()
+        start = time.time()
+        while True:
+            val = ser.read()
+            if val == b'\x00':
+                break
+            elif time.time() - start > timeout:
+                return False, self.TYPE_ERROR, None, None
+            buf += val
+        decoded = cobs.decode(buf)
 
-    def _check_packet(self, data):
-        """
-        パケットデータのサイズが正しいかどうかの確認を行う
-        
-        Args:
-            data (bytearray):受信した1パケット分のバイナリデータ
-
-        Returns:
-            True (bool):データの取得が成功
-            False (bool):データの取得に失敗
-        """
-        if len(data) != self.BUFF_SIZE:
-            return False
-        return True
+        crc8_func = crcmod.predefined.mkCrcFun('crc-8maxim')
+        crc = crc8_func(decoded[0:-1])
+        is_crc_valid = (crc == decoded[-1])
+        packet_type = decoded[0]
+        index = int(decoded[1]) * 1000 + int(decoded[2]) * 100 + int(decoded[3]) * 10 + int(decoded[4])
+        payload = decoded[5:-1]
+        return is_crc_valid, packet_type, index, payload
 
     def _send_request_image(self, ser):
         """
@@ -231,7 +223,7 @@ class SPRESENSE:
             ser (serial.Serial): 接続しているシリアル
 
         Returns:
-            img (bytearray): すべての画像データ
+            jgp_data (bytearray): 画像データ（JPEGバイナリ）
             
         Attributes:
             img (bytearray): 送信されたバイナリ画像データ.  size = 最大index値 * BUFF_SIZE(100)
@@ -256,44 +248,38 @@ class SPRESENSE:
             finish_flagがTrueの場合: send_flagがFalseであるもの,resend_index_listに含まれているものに対して再送命令. 
             すべてのデータが完全に送られるまでWhile分のループを実行
         """
-        img = b''
-        resend_index_list = []
-        finish_flag = False
-        send_flg = []
-
+        # 1. 送信要求
         self._send_request_image(ser)
 
-        while True:
-            code, index, data = self._get_packet(ser)
+        # 2. INFOパケット待ち
+        ret, code, index, data = self._get_packet(ser)
+        if ret and (code == self.TYPE_INFO):
+            max_index = index
+            buf = [None] * (max_index + 1)
+        else:
+            raise ValueError("INFOパケット受信できません")
 
-            if code == self.TYPE_INFO:
-                img = bytearray(index * self.BUFF_SIZE)
-                max_index = index
-                send_flg = [False] * max_index
-            elif code == self.TYPE_IMAGE:
-                if self._check_packet(data):
-                    img[index*self.BUFF_SIZE:(index+1)*self.BUFF_SIZE] = data
-                    send_flg[index] = True
-                    if index in resend_index_list:
-                        resend_index_list.remove(index)
-                else:
-                    resend_index_list.append(index)
-            elif code == self.TYPE_FINISH:
-                img += data
-                finish_flag = True
-            elif code == self.TYPE_ERROR:
-                print('cant get data')
+        # 3. 画像データ受信
+        for i in range(len(buf)):
+            ret, code, index, data = self._get_packet(ser)
+            if ret:
+                if (code == self.TYPE_IMAGE) or (code == self.TYPE_FINISH):
+                    buf[index] = data
 
-            if finish_flag:
-                if False in send_flg:
-                    print("resend", send_flg.index(False))
-                    self._send_request_resend(ser, send_flg.index(False))
-                for index in resend_index_list:
-                    self._send_request_resend(ser, index)
-                if (len(resend_index_list) == 0) and (not (False in send_flg)):
-                    self._send_complete_image(ser)
-                    break
-        return img
+        # 4. 再送要求（１回まで）
+        for i in range(len(buf)):
+            if buf[i] is None:
+                self._send_request_resend(ser, i)
+                ret, code, index, data = self._get_packet(ser)
+                if ret:
+                    if (code == self.TYPE_IMAGE) or (code == self.TYPE_FINISH):
+                        buf[index] = data
+
+        # 5. 終了送信
+        self._send_complete_image(ser)
+
+        jpg_data = bytearray(b''.join(buf))
+        return jpg_data
 
 class UsbCamera:
     """
@@ -316,8 +302,7 @@ class UsbCamera:
             filename (str): 保存ファイル名
         
         Returns:
-            True (bool)
-            False (bool)
+            ret(bool) : 画像保存が成功したか
 
         Notes:
             カメラ読み込みを50回実行
@@ -334,3 +319,18 @@ class UsbCamera:
         print(f"save image : {local_file_path}")
         cv2.imwrite(local_file_path, frame)
         return True
+
+
+if __name__ == '__main__':
+    while True:
+        devices = USB().get()
+        print(devices)
+        for i, (port, type, name) in enumerate(devices):
+            print(port, type, name)
+            tm = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+            if type == 'SPRESENSE':
+                SPRESENSE(name).save(f"test_{port}_{tm}.jpg")
+            elif type == 'USB Camera':
+                UsbCamera(name).save(f"test_{port}_{tm}.jpg")
+        time.sleep(60*10)
+

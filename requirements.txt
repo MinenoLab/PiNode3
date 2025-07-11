@@ -9,3 +9,4 @@ Sphinx==8.2.3
 gpiozero==2.0.1
 smbus2==0.5.0
 Adafruit-Blinka==8.62.0
+crcmod==1.7
