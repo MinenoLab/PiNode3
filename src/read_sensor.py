@@ -12,6 +12,7 @@ GPIO_I2C_EN = [4, 5, 6, 13, 19]  # I2C Enable Pins
 SHT25_ADDR = 0x40      # SHT25センサのアドレス
 S1133_INT_ADDR = 0x30  # S1133内部照度センサのアドレス
 S1133_EXT_ADDR = 0x31  # S1133外部照度センサのアドレス
+SHT85_ADDR = 0x44      # SHT85センサのアドレス
 
 class SensorManager:
     def __init__(self):
@@ -100,6 +101,21 @@ class SensorManager:
         """DIPスイッチ4がONか"""
         return not self.dip[3].is_pressed
 
+    @property
+    def opt_temperature(self):
+        """強制通風筒（オプション）の気温(℃)"""
+        self.i2c_enables[4].off()
+        temp = self._sht85_read()[0]
+        self.i2c_enables[4].on()
+        return temp
+
+    @property
+    def opt_humidity(self):
+        """強制通風筒（オプション）の湿度(RH%)"""
+        self.i2c_enables[4].off()
+        humi = self._sht85_read()[1]
+        self.i2c_enables[4].on()
+        return humi
 
     def _s1133_read(self, addr):
         """ 照度センサ（S1133）を読み取る """
@@ -133,13 +149,37 @@ class SensorManager:
             nT = (temp_data[0] << 8 | temp_data[1] & 0xFC)
             nH = (humi_data[0] << 8 | humi_data[1] & 0xFC)
 
-            fT = -46.85 + 175.72 * (nT / 65536.0)
-            fH = -6.00 + 125.00 * (nH / 65536.0)
+            fT = -46.85 + 175.72 * (nT / 65535.0)
+            fH = - 6.00 + 125.00 * (nH / 65535.0)
         except Exception as e:
             print(f"I2C Error: {e}")
-            fT, fH = 0, 0
+            fT, fH = 0.0, 0.0
         return fT, fH
 
+
+    def _sht85_read(self):
+        """ 温度・湿度センサ（SHT85）を読み取る """
+        try:
+            # I2Cバスの初期化
+            with SMBus(1) as bus:
+                # 測定
+                write = i2c_msg.write(SHT85_ADDR, [0x24, 0x00])
+                bus.i2c_rdwr(write)
+                time.sleep(0.1)
+                read = i2c_msg.read(SHT85_ADDR, 6)
+                bus.i2c_rdwr(read)
+                data = list(read)
+
+            # 計算
+            nT = (data[0] << 8 | data[1] << 0)
+            nH = (data[3] << 8 | data[4] << 0)
+
+            fT = -45.00 + 175.00 * (nT / 65535.0)
+            fH =   0.00 + 100.00 * (nH / 65535.0)
+        except Exception as e:
+            print(f"I2C Error: {e}")
+            fT, fH = 0.0, 0.0
+        return fT, fH
 
 if __name__ == "__main__":
     sm = SensorManager()
@@ -147,16 +187,15 @@ if __name__ == "__main__":
     try:
         while True:
             sm.toggle_led()
-            print(f"DIP-1: {'ON' if sm.is_on_dip1 else 'OFF'}")
-            print(f"DIP-2: {'ON' if sm.is_on_dip2 else 'OFF'}")
-            print(f"DIP-3: {'ON' if sm.is_on_dip3 else 'OFF'}")
-            print(f"DIP-4: {'ON' if sm.is_on_dip4 else 'OFF'}")
-            print(f"温度: {sm.temperature:.2f} °C")
-            print(f"湿度: {sm.humidity:.2f} %")
-            print(f"内部照度: {sm.inner_lx} lux")
-            print(f"外部照度: {sm.outer_lx} lux")
-            print(f"茎径: {sm.stem} V")
-            print(f"果実径: {sm.fruit_diameter} V")
+            print(f"DIP-SW   : {sm.is_on_dip1}-{sm.is_on_dip2}-{sm.is_on_dip3}-{sm.is_on_dip4}")
+            print(f"温度     : {sm.temperature:.2f} ℃")
+            print(f"湿度     : {sm.humidity:.2f} %")
+            print(f"内部照度 : {sm.inner_lx} lux")
+            print(f"外部照度 : {sm.outer_lx} lux")
+            print(f"茎径     : {sm.stem} V")
+            print(f"果実径   : {sm.fruit_diameter} V")
+            print(f"OPT気温  : {sm.opt_temperature:.2f} ℃")
+            print(f"OPT湿度  : {sm.opt_humidity:.2f} %")
             print("--------------------------")
             time.sleep(1)
     except KeyboardInterrupt:

@@ -66,8 +66,8 @@ class Sensor:
             Sensor.HD      : self.sensor_manager.humidity,
             Sensor.I_LX    : self.sensor_manager.inner_lx,
             Sensor.U_LX    : self.sensor_manager.outer_lx,
-            Sensor.TEMPHQ  : None,
-            Sensor.HDHQ    : None,
+            Sensor.TEMPHQ  : self.sensor_manager.opt_temperature,
+            Sensor.HDHQ    : self.sensor_manager.opt_humidity,
             Sensor.STEM    : self.sensor_manager.stem,
             Sensor.FRUIT   : self.sensor_manager.fruit_diameter,
         }
@@ -117,6 +117,9 @@ class Sensor:
         """
         センサデータを取得し、InfluxDBにアップロードまたはCSVに保存するメソッド
 
+        Returns:
+            df(pd.DataFrame): アップロードしたデータ
+
         Notes:
             全センサのデータを取得
             データの取得に失敗した場合はCSVにデータを保存
@@ -135,6 +138,7 @@ class Sensor:
         finally:
             csv_path = Path(self.config['sensor']['csv_dir']) / f"{self.config['device_id']}_{datetime.now().strftime('%Y%m%d-%H%M.csv')}"
             df.to_csv(csv_path)
+        return df
 
     def _is_valid(self, data, sensor:str):
         """
@@ -170,5 +174,6 @@ class Sensor:
 
 if __name__ == "__main__":
     sensor = Sensor()
-    sensor.upload_csv()
+    df = sensor.upload_csv()
+    print(df)
 
