@@ -50,7 +50,7 @@ echo "InfluxDBのインストールとセットアップが完了しました。
 
 ### pythonライブラリのインストール
 sudo apt update
-sudo apt install python3-opencv
+sudo apt install -y python3-opencv
 echo "=== pythonライブラリのインストール ==="
 python -m venv venv
 source venv/bin/activate
