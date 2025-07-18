@@ -93,7 +93,7 @@ class Sensor:
         for _ in range(max_retry):
             try:
                 # センサデータの取得
-                data = self.sensors[sensor_name]
+                data = float(self.sensors[sensor_name])
                 # 取得後の待機時間
                 time.sleep(self.config['sensor']['sleep_time'].get(sensor_name, 0.1))
                 # データの妥当性検証
@@ -102,9 +102,9 @@ class Sensor:
                 if result == SensorResult.SUCCESS:
                     # 前回のセンサデータを更新
                     with open(self.previous_data_path, 'w') as f:
-                        self.previous_sensor_data[sensor_name] = float(data)
+                        self.previous_sensor_data[sensor_name] = data
                         json.dump(self.previous_sensor_data, f, indent=4)
-                    return result, float(data)
+                    return result, data
             except Exception as e:
                 print(f"センサ取得エラー ({sensor_name}): {e}")
             finally:

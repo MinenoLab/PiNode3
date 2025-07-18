@@ -1,10 +1,10 @@
 {
-    "i_v_light": 0,
-    "u_v_light": 0,
-    "temperature": 0,
-    "humidity": 0,
-    "temperature_hq": 0,
-    "humidity_hq": 0,
-    "stem": 0,
-    "fruit_diagram": 0
+    "i_v_light"     : 0.0,
+    "u_v_light"     : 0.0,
+    "temperature"   : 0.0,
+    "humidity"      : 0.0,
+    "temperature_hq": 0.0,
+    "humidity_hq"   : 0.0,
+    "stem"          : 0.0,
+    "fruit_diagram" : 0.0
 }

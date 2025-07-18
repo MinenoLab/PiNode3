@@ -7,6 +7,7 @@ import time
 GPIO_LED = 18                    # LED_G
 GPIO_DSW = [12, 16, 20, 21]      # SW1_1, SW1_2, SW1_3, SW1_4
 GPIO_I2C_EN = [4, 5, 6, 13, 19]  # I2C Enable Pins
+GPIO_SPI_OE = 25                 # SPI Output Enable
 
 # I2Cアドレスの定義
 SHT25_ADDR = 0x40      # SHT25センサのアドレス
@@ -14,14 +15,18 @@ S1133_INT_ADDR = 0x30  # S1133内部照度センサのアドレス
 S1133_EXT_ADDR = 0x31  # S1133外部照度センサのアドレス
 SHT85_ADDR = 0x44      # SHT85センサのアドレス
 
+MCP3204_REFV = 2.048   # MCP3204リファレンス電圧
+
+
 class SensorManager:
     def __init__(self):
         # デバイスの初期化
         self.led = LED(GPIO_LED)
         self.dip = [Button(pin, pull_up=False) for pin in GPIO_DSW]
         self.i2c_enables = [DigitalOutputDevice(pin) for pin in GPIO_I2C_EN]
-        self.adc_stem = MCP3204(0, max_voltage=2.0)
-        self.adc_fruit = MCP3204(1, max_voltage=2.0)
+        self.spi_enable = DigitalOutputDevice(GPIO_SPI_OE)
+        self.adc_stem = MCP3204(0, max_voltage=MCP3204_REFV)
+        self.adc_fruit = MCP3204(1, max_voltage=MCP3204_REFV)
         # クリーンアップの登録
         atexit.register(self.cleanup)
 
@@ -32,6 +37,7 @@ class SensorManager:
             sw.close()
         for en in self.i2c_enables:
             en.close()
+        self.spi_enable.close()
         self.adc_stem.close()
         self.adc_fruit.close()
 
@@ -73,13 +79,19 @@ class SensorManager:
 
     @property
     def stem(self):
-        """茎径：センサの電圧(V)を返す"""
-        return self.adc_stem.value
+        """茎径：センサの電圧(0～2.048V)を返す"""
+        self.spi_enable.on()
+        value = self.adc_stem.value * MCP3204_REFV
+        self.spi_enable.off()
+        return value
 
     @property
     def fruit_diameter(self):
-        """果実径：センサの電圧(V)を返す"""
-        return self.adc_fruit.value
+        """果実径：センサの電圧(0～2.048V)を返す"""
+        self.spi_enable.on()
+        value = self.adc_fruit.value * MCP3204_REFV
+        self.spi_enable.off()
+        return value
 
     @property
     def is_on_dip1(self):
