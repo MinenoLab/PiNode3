@@ -94,7 +94,7 @@ class SPRESENSE:
         for i in range(3):
             try:
                 with serial.Serial(self.port_num, self.BAUD_RATE, timeout = 3) as ser:
-                    time.sleep(2)
+                    time.sleep(5)
                     img = self._get_image_data(ser)
                     print(f"save image : {local_file_path}")
                     with open(local_file_path, "wb") as f:
