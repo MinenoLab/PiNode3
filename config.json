@@ -15,7 +15,8 @@
         "field_id": "daiwa-field-04",
         "project_id": "daiwa",
         "device_type": "PiNode",
-        "wilt_device_id": "PiNodeW"
+        "wilt_device_id": "",
+        "_comment": "wilt_device_id is used for wilt device. If you don't use wilt device, please write null."
     },
  
     "sensor"    : {
