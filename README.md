@@ -70,6 +70,17 @@ $ sudo nmcli con mod "netplan-eth0" ipv4.dns "8.8.8.8"
 $ sudo nmcli con mod "netplan-eth0" ipv4.method manual
 $ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
 $ sudo nmcli con mod "netplan-eth0" ipv4.never-default yes
+```
+
+次に，VPNサブネット（例：192.168.200.0/24）宛のみeth0宛ゲートウェイに向けるようにします．
+
+``` bash
+$ sudo nmcli con mod "netplan-eth0" +ipv4.routes "192.168.200.0/24 192.168.XX.1"
+```
+
+最後に設定を反映します．
+
+``` bash
 $ sudo nmcli con up "netplan-eth0"
 ```
 
