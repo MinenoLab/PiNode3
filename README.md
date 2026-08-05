@@ -54,6 +54,7 @@ $ nmcli con show
 表示された接続名（例：`netplan-eth0`）に対して，以下を順に実行してIPアドレス・ゲートウェイ・DNSを設定し，
 手動設定モードに切り替えたうえで自動接続を有効化します（値は環境に合わせて書き換えてください）．
 
+間違っているやつ
 ``` bash
 $ sudo nmcli con mod "netplan-eth0" ipv4.addresses "192.168.XX.YY/24"
 $ sudo nmcli con mod "netplan-eth0" ipv4.gateway   "192.168.XX.1"
@@ -61,6 +62,16 @@ $ sudo nmcli con mod "netplan-eth0" ipv4.dns       "192.168.XX.1 8.8.8.8"
 $ sudo nmcli con mod "netplan-eth0" ipv4.method manual
 $ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
 $ sudo nmcli con up  "netplan-eth0"
+```
+
+正しいやつ（Discussed with Gemini）
+``` bash
+$ sudo nmcli con mod "netplan-eth0" ipv4.addresses "192.168.XX.YY/24"
+$ sudo nmcli con mod "netplan-eth0" ipv4.dns "8.8.8.8"
+$ sudo nmcli con mod "netplan-eth0" ipv4.method manual
+$ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
+$ sudo nmcli con mod "netplan-eth0" ipv4.never-default yes
+$ sudo nmcli con up "netplan-eth0"
 ```
 
 ### IPアドレス割り当てルール
