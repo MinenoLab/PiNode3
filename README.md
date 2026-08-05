@@ -37,9 +37,9 @@ Raspberry Pi OSのインストーラは Raspberry Pi Imager を用いて作成�
 4. 書き込み用MicroSDカードを選択する
 5. 指示に従ってOSイメージを書き込む
 
-書き込み時設定（推奨値）
+書き込み時設定
 - OS : Raspberry Pi OS (64bit)
-- ホスト名 : 固定IPアドレスの下2桁を付ける（例：`PiNode1-11`）
+- ホスト名 : 固定IPアドレスの下2桁を付ける（例：`pinode50`）
 - ユーザ名 : `pinode3`
 - パスワード : 任意
 - Wi-Fi設定（SSID / パスワード / 国：JP）
@@ -80,11 +80,15 @@ $ ip a
 
 ### SSH・I2C・SPI有効化
 温度・湿度・照度データはI2C，果実径・茎径データはSPIを用いて取得しています．
-Raspberry PiではデフォルトでI2C/SPIおよびSSHが無効化されているため，有効化します．
+Raspberry PiではデフォルトでI2C/SPIおよびSSHが無効化されているため，有効化する必要があります．
 ``` bash
 $ sudo raspi-config
 ```
 `Interfacing Options` から `SSH` / `I4 I2C` / `I3 SPI` をそれぞれ有効化し，リブートで反映されます．
+
+``` bash
+$ sudo reboot
+```
 
 ### PCからのアクセス
 Raspiに直接キーボード・モニタを繋がず，PCからSSHで操作する場合の手順です．
@@ -105,7 +109,7 @@ Raspiに直接キーボード・モニタを繋がず，PCからSSHで操作す�
         HostName 192.168.*.*
         User pinode3
     ```
-3. VSCodeから「ホストに接続する」→ `pinode` を選択
+3. VSCodeから「ホストに接続する」→ `pinodeXX` を選択
 
 # インストール
 
@@ -159,7 +163,7 @@ $ bash install_with_rsync.sh
     - `daily_rsync.timer`（rsyncによる日次アップロード）
     - `noon_monitor.timer`（正午に画角調整を実行）
 
-#### b. AWS上へのデータ送信のみ
+#### b. AWS上へのデータ送信のみの場合
 rsync連携が不要な場合，`install.sh` を実行します．
 ``` bash
 $ cd PiNode3
