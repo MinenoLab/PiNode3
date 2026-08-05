@@ -20,7 +20,6 @@ else
 	echo "This device is not a Raspberry Pi."
 	exit 1
 fi
-
 ### rsyncによるデータのアップロード
 echo === ssh公開鍵の登録 ===
 ssh-keygen -t rsa -b 2048 -N "" -f ~/.ssh/pinode_key -q
@@ -30,12 +29,11 @@ echo "-> 接続先ユーザ名を入力してください。"
 read -p "NAME :" NAME
 ssh-copy-id -i ~/.ssh/pinode_key.pub "$NAME"@"$HOST"
 ip_hyphen=$(hostname -I | awk '{gsub(/\./, "-");print $1}')
-cat << EOF > "/home/pinode3/upload_files.sh"
+cat << INNER_EOF > "/home/pinode3/upload_files.sh"
 #!/bin/bash
 rsync -az -e "ssh -i /home/pinode3/.ssh/pinode_key" --rsync-path="mkdir -p /home/$NAME/$ip_hyphen/data && rsync" /home/pinode3/data/ $NAME@$HOST:/home/$NAME/$ip_hyphen/data/
-EOF
+INNER_EOF
 chmod +x "/home/pinode3/upload_files.sh"
-
 ### python・サービス・設定ファイル等を移行する
 echo === Python/サービス/設定ファイルのコピー ===
 sudo cp service/* /etc/systemd/system/
@@ -46,13 +44,13 @@ mkdir -p /home/pinode3/data/image/image3
 mkdir -p /home/pinode3/data/image/image4
 cp src/previous_sensor_data.json /home/pinode3/data
 cp config.json /home/pinode3/
-
 ### コンフィグ設定
+# device_id を pinodeXX (XX = 固定IPの第4オクテット) 形式で自動設定する
 echo === コンフィグ設定 ===
-DEV_ID=$(echo "$ip_hyphen" | cut -d'-' -f3-)
+FOURTH_OCTET=$(hostname -I | awk '{print $1}' | awk -F. '{print $4}')
+DEV_ID="pinode${FOURTH_OCTET}"
 echo DEVICE_ID = "$DEV_ID"
-sed -i "2s/00/$DEV_ID/" /home/pinode3/config.json
-
+sed -i "2s/\"00\"/\"$DEV_ID\"/" /home/pinode3/config.json
 ### サービスファイルの登録
 echo === サービスファイルの登録 ===
 sudo systemctl daemon-reload
@@ -60,3 +58,7 @@ sudo systemctl enable data_collector.timer
 sudo systemctl start data_collector.timer
 sudo systemctl enable daily_rsync.timer
 sudo systemctl start daily_rsync.timer
+sudo systemctl enable noon_monitor.timer
+sudo systemctl start noon_monitor.timer
+
+echo "=== インストール完了 ==="

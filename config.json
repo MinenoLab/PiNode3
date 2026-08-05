@@ -9,8 +9,8 @@
         "bucket"        : "pinode"
     },
     "aws_iot": {
-        "endpoint": "AAAAAAAAAAAAAAAAAAAAA",
-        "credentials_endpoint": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "endpoint": "xxxx.iot.ap-northeast-1.amazonaws.com",
+        "credentials_endpoint": "xxxx.credentials.iot.ap-northeast-1.amazonaws.com",
         "cert_dir": "/etc/iot",
         "field_id": "daiwa-field-04",
         "project_id": "daiwa",
@@ -85,9 +85,7 @@
         "SPRESENSE"      : 3
     },
     "s3": {
-
-        "bucket_name": "AAAAAAAA"
-
+        "bucket_name": "BUCKET_NAME"
     }
  
 }
