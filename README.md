@@ -105,7 +105,7 @@ Raspberry PiではデフォルトでI2C/SPIおよびSSHが無効化されてい�
 ``` bash
 $ sudo raspi-config
 ```
-`Interfacing Options` から `SSH` / `I4 I2C` / `I3 SPI` をそれぞれ有効化し，リブートで反映されます．
+`Interfacing Options` から `SSH` / `I4 I2C` / `I3 SPI` をそれぞれ有効化し，リブートで反映させます．
 
 ``` bash
 $ sudo reboot
@@ -120,6 +120,11 @@ Raspiに直接キーボード・モニタを繋がず，PCからSSHで操作す�
 ```
 
 同一のネットワーク環境下にある場合，ホスト名を指定しても接続可能です．
+
+``` powershell
+> ssh pinode3@pinodeXX
+```
+
 ただし，VPN経由で接続している場合，名前解決できない可能性があります．
 
 **VSCode Remote-SSH で接続（複数回アクセスする場合）**
@@ -267,6 +272,17 @@ $ sudo systemctl restart data_collector.timer
 $ date
 $ timedatectl
 $ sudo timedatectl set-timezone Asia/Tokyo
+```
+
+パッケージリストの更新・HTTP経由の時刻同期ツールのインストール
+``` bash
+$ sudo apt update
+$ sudo apt install -y htpdate
+```
+
+GoogleやNICTのHTTPヘッダを用いた時刻同期
+``` bash
+sudo htpdate -d -q [www.google.com](https://www.google.com) [www.nict.go.jp](https://www.nict.go.jp)
 ```
 
 ### サービスファイルのハング対応
