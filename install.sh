@@ -9,11 +9,15 @@
 # すでにインストールされている場合はスキップ
 if ! command -v influxd &> /dev/null; then
     echo "InfluxDB をインストールします..."
-    
-    wget -q https://repos.influxdata.com/influxdata-archive_compat.key
-    echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c influxdata-archive_compat.key' | sha256sum -c && \
-    cat influxdata-archive_compat.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg > /dev/null
-    echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+
+    curl --silent --location -O https://repos.influxdata.com/influxdata-archive.key
+    gpg --show-keys --with-fingerprint --with-colons ./influxdata-archive.key 2>&1 \
+    | grep -q '^fpr:\+24C975CBA61A024EE1B631787C3D57159FC2F927:$' \
+    && cat influxdata-archive.key \
+    | gpg --dearmor \
+    | sudo tee /etc/apt/keyrings/influxdata-archive.gpg > /dev/null \
+    && echo 'deb [signed-by=/etc/apt/keyrings/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' \
+    | sudo tee /etc/apt/sources.list.d/influxdata.list
 
     sudo apt-get -y update && sudo apt-get install -y influxdb2
     sudo systemctl start influxdb
@@ -50,7 +54,7 @@ echo "InfluxDBのインストールとセットアップが完了しました。
 
 ### pythonライブラリのインストール
 sudo apt update
-sudo apt install -y python3-opencv
+sudo apt install -y python3-opencv swig liblgpio-dev
 echo "=== pythonライブラリのインストール ==="
 python -m venv venv
 source venv/bin/activate
