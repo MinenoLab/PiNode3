@@ -314,6 +314,7 @@ $ sudo systemctl stop data_collector.service
 `data_collector.service` に実行時間の上限を設定し，ハング時に自動で強制終了されるようにします．
 
 ```bash
+$ sudo mkdir -p /etc/systemd/system/data_collector.service.d
 $ sudo tee /etc/systemd/system/data_collector.service.d/override.conf > /dev/null <<'EOF'
 [Service]
 TimeoutStartSec=180
