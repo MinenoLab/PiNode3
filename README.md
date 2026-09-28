@@ -51,38 +51,49 @@ RaspiのIPアドレスを固定するため，`nmcli`で設定します．
 ``` bash
 $ nmcli con show
 ```
-表示された接続名（例：`netplan-eth0`）に対して，以下を順に実行してIPアドレス・ゲートウェイ・DNSを設定し，
+表示された接続名（例：`netplan-eth0`，もしくは`Wired connection 1`）に対して，以下を順に実行してIPアドレス・ゲートウェイ・DNSを設定し，
 手動設定モードに切り替えたうえで自動接続を有効化します（値は環境に合わせて書き換えてください）．
 
-<!-- 間違っているやつ
-``` bash
-$ sudo nmcli con mod "netplan-eth0" ipv4.addresses "192.168.XX.YY/24"
-$ sudo nmcli con mod "netplan-eth0" ipv4.gateway   "192.168.XX.1"
-$ sudo nmcli con mod "netplan-eth0" ipv4.dns       "192.168.XX.1 8.8.8.8"
-$ sudo nmcli con mod "netplan-eth0" ipv4.method manual
-$ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
-$ sudo nmcli con up  "netplan-eth0"
-``` -->
+#### 1．eth0(有線)の基本設定
 
 ``` bash
 $ sudo nmcli con mod "netplan-eth0" ipv4.addresses "192.168.XX.YY/24"
-$ sudo nmcli con mod "netplan-eth0" ipv4.dns "8.8.8.8"
-$ sudo nmcli con mod "netplan-eth0" ipv4.method manual
-$ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
-$ sudo nmcli con mod "netplan-eth0" ipv4.never-default yes
+$ sudo nmcli con mod "netplan-eht0" ipv4.gateway "192.168.XX.1"
+$ sudo nmcli con mod "netplan-eht0" ipv4.dns "192.168.XX.1 8.8.8.8"
+$ sudo nmcli con mod "netplan-eht0" ipv4.method manual
+$ sudo nmcli con mod "netplan-eht0" connection.autoconnect yes
 ```
 
-次に，VPNサブネット（例：192.168.200.0/24）宛のみeth0宛ゲートウェイに向けるようにします．
+#### 2．eth0のデフォルトルートとmetric設定
+
+``` bash
+$ sudo nmcli con mod "netplan-eth0" ipv4.never-default no
+$ sudo nmcli con mod "netplan-eht0" ipv4.route-metric 600
+```
+
+- 有線経由のルートを低優先度（600）とすることで，研究室内ではWi-Fiの通信を優先させる
+
+#### 3．VPNサブネット向けstatic route
+
+VPNサブネット（例：192.168.200.0/24）宛のみeth0のゲートウェイに向けるようにします．
 
 ``` bash
 $ sudo nmcli con mod "netplan-eth0" +ipv4.routes "192.168.200.0/24 192.168.XX.1"
 ```
 
-最後に設定を反映します．
+#### 4．wlan0(Wi-Fi)のmetric設定
 
 ``` bash
-$ sudo nmcli con up "netplan-eth0"
+$ sudo nmcli con mod "Wi-Fi connection name" ipv4.route-metric 100
 ```
+
+#### 5．設定の反映と確認
+
+``` bash
+$ sudo nmcli con down "netplan-eth0" && sudo nmcli con up "netplan-eth0"
+```
+
+- eth0(有線)経由で接続している場合，一時的に接続が切断される可能性がある
 
 ### IPアドレス割り当てルール
 | 位置 | 例 | 割り当て |
