@@ -91,6 +91,7 @@ $ sudo nmcli con mod "Wi-Fi connection name" ipv4.route-metric 100
 
 ``` bash
 $ sudo nmcli con down "netplan-eth0" && sudo nmcli con up "netplan-eth0"
+$ sudo nmcli con down "Wi-Fi connection name" && sudo nmcli con up "Wi-Fi connection name"
 ```
 
 - eth0(有線)経由で接続している場合，一時的に接続が切断される可能性がある
