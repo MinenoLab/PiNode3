@@ -58,17 +58,17 @@ $ nmcli con show
 
 ``` bash
 $ sudo nmcli con mod "netplan-eth0" ipv4.addresses "192.168.XX.YY/24"
-$ sudo nmcli con mod "netplan-eht0" ipv4.gateway "192.168.XX.1"
-$ sudo nmcli con mod "netplan-eht0" ipv4.dns "192.168.XX.1 8.8.8.8"
-$ sudo nmcli con mod "netplan-eht0" ipv4.method manual
-$ sudo nmcli con mod "netplan-eht0" connection.autoconnect yes
+$ sudo nmcli con mod "netplan-eth0" ipv4.gateway "192.168.XX.1"
+$ sudo nmcli con mod "netplan-eth0" ipv4.dns "192.168.XX.1 8.8.8.8"
+$ sudo nmcli con mod "netplan-eth0" ipv4.method manual
+$ sudo nmcli con mod "netplan-eth0" connection.autoconnect yes
 ```
 
 #### 2．eth0のデフォルトルートとmetric設定
 
 ``` bash
 $ sudo nmcli con mod "netplan-eth0" ipv4.never-default no
-$ sudo nmcli con mod "netplan-eht0" ipv4.route-metric 600
+$ sudo nmcli con mod "netplan-eth0" ipv4.route-metric 600
 ```
 
 - 有線経由のルートを低優先度（600）とすることで，研究室内ではWi-Fiの通信を優先させる
@@ -409,4 +409,12 @@ Spresense書き込み完了後，PCの仮想環境から動作を確認できま
 $ cd PiNode3-SPRESENSE/python
 $ pip install -r requirements.txt
 $ python image_checker.py
+```
+
+# SSH接続のホスト鍵が変わった場合
+
+pinode36の部分はデバイスのホスト名に合わせて変更してください．
+
+``` bash
+$ ssh-keygen -R pinode36
 ```
